@@ -99,8 +99,7 @@
     );
     if (!items.length) return;
 
-    const gRect    = gallery.getBoundingClientRect();
-    const gMiddleY = gRect.top + gRect.height / 2;
+    const gMiddleY = window.innerHeight / 2;
 
     let closestEl   = null;
     let closestDist = Infinity;
