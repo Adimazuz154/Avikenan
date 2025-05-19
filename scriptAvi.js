@@ -135,8 +135,8 @@
       });
     }, {
       root:       null,
-      rootMargin: "-50% 0px -50% 0px",
-      threshold:  0
+      rootMargin: "0px",
+      threshold:  0.5
     });
 
     items.forEach(el => io.observe(el));
