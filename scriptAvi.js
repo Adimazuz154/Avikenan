@@ -136,7 +136,7 @@
     }, {
       root:       null,
       rootMargin: "-50% 0px -50% 0px",
-      threshold:  0.5
+      threshold:  0
     });
 
     items.forEach(el => io.observe(el));
