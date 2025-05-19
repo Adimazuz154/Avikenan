@@ -27,10 +27,17 @@
   
     function initObserver() {
       initWheel();
+
       if (io) io.disconnect();
-  
       const items = document.querySelectorAll("#gallery a");
       if (!items.length) return;
+
+      // figure out if we're scrolling horizontally or vertically
+      const isHorizontal = gallery.scrollWidth > gallery.clientWidth;
+      const rootMargin   = isHorizontal
+      ? "0px -50% 0px -50%"   // center on X-axis
+      : "-50% 0px -50% 0px";  // center on Y-axis
+      const threshold = isHorizontal ? 0.5 : 0;
   
       io = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
@@ -70,7 +77,7 @@
         });
       }, {
         root:       null,
-        rootMargin: "-50% 0px -50% 0px",
+        rootMargin,
         threshold:  0
       });
   
