@@ -144,6 +144,60 @@
     // ←—— **new**: whenever the gallery is observed (initial load OR after a route change),
     // kick off the auto-scroll setup too.
     initAutoScroll();
+
+      // —————— pick exactly one element to get .in-center ——————
+  function updateInCenter() {
+    const gallery = document.querySelector('#gallery');
+    if (!gallery) return;
+
+    // **within** gallery: grab all links and all div-wrappers
+    const items = Array.from(
+      gallery.querySelectorAll('a, :scope > div > div')
+    );
+    if (!items.length) return;
+
+    const gRect    = gallery.getBoundingClientRect();
+    const gMiddleY = gRect.top + gRect.height/2;
+
+    let closestEl   = null;
+    let closestDist = Infinity;
+
+    items.forEach(el => {
+      const r    = el.getBoundingClientRect();
+      const midY = r.top + r.height/2;
+      const dist = Math.abs(midY - gMiddleY);
+      if (dist < closestDist) {
+        closestDist = dist;
+        closestEl   = el;
+      }
+    });
+
+    items.forEach(el => {
+      el.classList.toggle('in-center', el === closestEl);
+    });
+  }
+
+  // —————— attach scroll & resize handlers once ——————
+  if (!centerListenersAttached) {
+    const galleryEl = document.querySelector('#gallery');
+    if (galleryEl) {
+      let ticking = false;
+      galleryEl.addEventListener('scroll', () => {
+        if (!ticking) {
+          ticking = true;
+          requestAnimationFrame(() => {
+            updateInCenter();
+            ticking = false;
+          });
+        }
+      });
+      window.addEventListener('resize', updateInCenter);
+      centerListenersAttached = true;
+    }
+  }
+
+  // run it immediately on init
+  updateInCenter();
   }
 
   /* ——— SPA navigation hooks ——— */
