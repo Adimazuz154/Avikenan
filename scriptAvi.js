@@ -69,12 +69,15 @@
     const gallery = document.querySelector("#gallery");
     if (!gallery) return;
 
-    if (window.location.pathname === '/press') {
-    // make sure it scrolls normally on Y
-    gallery.style.overflowX = 'hidden';
-    gallery.style.overflowY = 'auto';
-    // don’t start the ticker
-    return;
+    const isPress = window.location.pathname === "/press";
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
+    if (isPress && isMobile) {
+      // force normal vertical scrolling
+      gallery.style.overflowX = "hidden";
+      gallery.style.overflowY = "auto";
+      // make sure any running ticker is stopped
+      stopAutoScroll();
+      return;
   }
 
     stopAutoScroll();
