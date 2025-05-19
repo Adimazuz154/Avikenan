@@ -92,38 +92,39 @@
   const gallery = document.querySelector('#gallery');
   if (!gallery) return;
 
-  // grab both your <a> and your two-levels-down <div> wrappers
+  // grab all your <a> links AND the inner two-level div wrappers
   const items = Array.from(
     gallery.querySelectorAll('a, :scope > div > div')
   );
   if (!items.length) return;
 
-  // decide orientation
+  // decide whether this gallery scrolls horizontally or vertically
   const isHorizontal = gallery.scrollWidth > gallery.clientWidth;
 
-  // pick the screen mid-point on the relevant axis
-  const screenMid = isHorizontal
-    ? window.innerWidth  / 2   // horizontal centre
-    : window.innerHeight / 2;  // vertical centre
+  // find the gallery’s own center line
+  const gRect      = gallery.getBoundingClientRect();
+  const galleryMid = isHorizontal
+    ? gRect.left   + gRect.width  / 2   // x-axis center
+    : gRect.top    + gRect.height / 2;  // y-axis center
 
   let closestEl   = null;
   let closestDist = Infinity;
 
   items.forEach(el => {
     const r = el.getBoundingClientRect();
-    // compute each element’s mid-point on X or Y
+    // find each item’s center on the same axis
     const elMid = isHorizontal
-      ? r.left + r.width  / 2
-      : r.top  + r.height / 2;
+      ? (r.left + r.width  / 2)
+      : (r.top  + r.height / 2);
 
-    const dist = Math.abs(elMid - screenMid);
+    const dist = Math.abs(elMid - galleryMid);
     if (dist < closestDist) {
       closestDist = dist;
       closestEl   = el;
     }
   });
 
-  // toggle .in-center so only the closestEl gets it
+  // only that one element gets .in-center
   items.forEach(el => {
     el.classList.toggle('in-center', el === closestEl);
   });
