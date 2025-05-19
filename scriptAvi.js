@@ -24,67 +24,14 @@
     "./christianity-jew":  "Jewelry"
   };
 
-  /* ——— intersection-observer + title/thumbnail swap ——— */
-  function initObserver() {
-    initWheel();
-    if (io) io.disconnect();
-
-    const items = document.querySelectorAll("#gallery a");
-    if (!items.length) return;
-
-    io = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        const el   = entry.target;
-        const href = el.getAttribute("href");
-
-        // 1) gallery-scale toggle
-        el.classList.toggle("in-center", entry.isIntersecting);
-
-        if (entry.isIntersecting && hrefMap[href]) {
-          // 2) update main-title text
-          const newText = hrefMap[href];
-          const span    = document.querySelector("#main-title .framer-text span");
-          if (span) {
-            const parts = newText.split(" ");
-            span.innerHTML = parts.length === 1
-              ? parts[0]
-              : parts[0] + `<br class="framer-text">` + parts.slice(1).join(" ");
-          }
-
-          // 3) update thumbnail selection
-          const thumbId = thumbMap[href];
-          if (thumbId) {
-            if (currentThumbId && currentThumbId !== thumbId) {
-              document.getElementById(currentThumbId)
-                      ?.classList.remove("selected");
-            }
-            const thumbEl = document.getElementById(thumbId);
-            if (thumbEl) {
-              thumbEl.classList.add("selected");
-              currentThumbId = thumbId;
-            }
-          }
-        }
-      });
-    }, {
-      root:       null,
-      rootMargin: "-50% 0px -50% 0px",
-      threshold:  0
-    });
-
-    items.forEach(el => io.observe(el));
-  }
-
   /* ——— wheel-override when cursor over gallery ——— */
-  function initWheel(){
+  function initWheel() {
     const allowOnPages = ['/', '/press'];
     if (wheelHandler) {
       window.removeEventListener('wheel', wheelHandler, { passive: false });
       wheelHandler = null;
     }
-    if (!allowOnPages.includes(window.location.pathname)) {
-      return;
-    }
+    if (!allowOnPages.includes(window.location.pathname)) return;
     const gallery = document.querySelector("#gallery");
     if (!gallery) return;
 
@@ -144,12 +91,65 @@
     startAutoScroll();
   }
 
+  /* ——— intersection-observer + title/thumbnail swap ——— */
+  function initObserver() {
+    initWheel();
+    if (io) io.disconnect();
+
+    const items = document.querySelectorAll("#gallery a");
+    if (!items.length) return;
+
+    io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        const el   = entry.target;
+        const href = el.getAttribute("href");
+
+        // 1) gallery-scale toggle
+        el.classList.toggle("in-center", entry.isIntersecting);
+
+        if (entry.isIntersecting && hrefMap[href]) {
+          // 2) update main-title text
+          const newText = hrefMap[href];
+          const span    = document.querySelector("#main-title .framer-text span");
+          if (span) {
+            const parts = newText.split(" ");
+            span.innerHTML = parts.length === 1
+              ? parts[0]
+              : parts[0] + `<br class="framer-text">` + parts.slice(1).join(" ");
+          }
+
+          // 3) update thumbnail selection
+          const thumbId = thumbMap[href];
+          if (thumbId) {
+            if (currentThumbId && currentThumbId !== thumbId) {
+              document.getElementById(currentThumbId)
+                      ?.classList.remove("selected");
+            }
+            const thumbEl = document.getElementById(thumbId);
+            if (thumbEl) {
+              thumbEl.classList.add("selected");
+              currentThumbId = thumbId;
+            }
+          }
+        }
+      });
+    }, {
+      root:       null,
+      rootMargin: "-50% 0px -50% 0px",
+      threshold:  0
+    });
+
+    items.forEach(el => io.observe(el));
+
+    // ←—— **new**: whenever the gallery is observed (initial load OR after a route change),
+    // kick off the auto-scroll setup too.
+    initAutoScroll();
+  }
+
   /* ——— SPA navigation hooks ——— */
   function onLocationChange() {
-    setTimeout(() => {
-      initObserver();
-      initAutoScroll();
-    }, 50);
+    // tiny delay to let Framer re-render the DOM
+    setTimeout(initObserver, 50);
   }
   const _push = history.pushState;
   history.pushState = function() {
@@ -165,9 +165,6 @@
   window.addEventListener("locationchange", onLocationChange);
 
   /* ——— initial boot ——— */
-  document.addEventListener("DOMContentLoaded", () => {
-    initObserver();
-    initAutoScroll();
-  });
+  document.addEventListener("DOMContentLoaded", initObserver);
 
 })();
