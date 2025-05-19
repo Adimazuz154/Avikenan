@@ -88,36 +88,46 @@
     startAutoScroll();
   }
 
-  /* ——— pick exactly one item to scale ——— */
-  function updateInCenter() {
-    const gallery = document.querySelector('#gallery');
-    if (!gallery) return;
+ function updateInCenter() {
+  const gallery = document.querySelector('#gallery');
+  if (!gallery) return;
 
-    // within gallery: both links and your two-levels-down div wrappers
-    const items = Array.from(
-      gallery.querySelectorAll('a, :scope > div > div')
-    );
-    if (!items.length) return;
+  // grab both your <a> and your two-levels-down <div> wrappers
+  const items = Array.from(
+    gallery.querySelectorAll('a, :scope > div > div')
+  );
+  if (!items.length) return;
 
-    const gMiddleY = window.innerHeight / 2;
+  // decide orientation
+  const isHorizontal = gallery.scrollWidth > gallery.clientWidth;
 
-    let closestEl   = null;
-    let closestDist = Infinity;
+  // pick the screen mid-point on the relevant axis
+  const screenMid = isHorizontal
+    ? window.innerWidth  / 2   // horizontal centre
+    : window.innerHeight / 2;  // vertical centre
 
-    items.forEach(el => {
-      const r    = el.getBoundingClientRect();
-      const midY = r.top + r.height / 2;
-      const dist = Math.abs(midY - gMiddleY);
-      if (dist < closestDist) {
-        closestDist = dist;
-        closestEl   = el;
-      }
-    });
+  let closestEl   = null;
+  let closestDist = Infinity;
 
-    items.forEach(el => {
-      el.classList.toggle('in-center', el === closestEl);
-    });
-  }
+  items.forEach(el => {
+    const r = el.getBoundingClientRect();
+    // compute each element’s mid-point on X or Y
+    const elMid = isHorizontal
+      ? r.left + r.width  / 2
+      : r.top  + r.height / 2;
+
+    const dist = Math.abs(elMid - screenMid);
+    if (dist < closestDist) {
+      closestDist = dist;
+      closestEl   = el;
+    }
+  });
+
+  // toggle .in-center so only the closestEl gets it
+  items.forEach(el => {
+    el.classList.toggle('in-center', el === closestEl);
+  });
+}
 
   /* ——— intersection‐observer for title & thumbnails only ——— */
   function initObserver() {
