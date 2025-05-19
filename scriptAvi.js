@@ -16,7 +16,7 @@
 
   // map gallery href → heading text
   const hrefMap = {
-    "./christianity":      "Bronze",
+    "./christianity":      "hello",
     "./whispers-of-color": "Painted",
     "./sulky-mon":         "Monumental",
     "./photography4":      "Photography",
