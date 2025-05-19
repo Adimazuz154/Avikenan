@@ -29,16 +29,20 @@
       initWheel();
 
       if (io) io.disconnect();
-      const items = document.querySelectorAll("#gallery a");
-      if (!items.length) return;
+      const gallery = document.querySelector("#gallery");
+      if (!gallery) return;
 
-      // figure out if we're scrolling horizontally or vertically
+      const items = gallery.querySelectorAll("a");
+      if (!items.length) return;
+      
+      // figure out orientation
       const isHorizontal = gallery.scrollWidth > gallery.clientWidth;
       const rootMargin   = isHorizontal
-      ? "0px -40% 0px -40%"   // center on X-axis
-      : "-50% 0px -50% 0px";  // center on Y-axis
-      const threshold = isHorizontal ? 0.5 : 0;
-  
+        ? "0px -50% 0px -50%"
+        : "-50% 0px -50% 0px";
+      // only fire when at least half of the item is within that “center band”
+      const threshold    = isHorizontal ? 0.5 : 0.5;
+
       io = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
           const el   = entry.target;
@@ -78,9 +82,9 @@
       }, {
         root:       null,
         rootMargin,
-        threshold:  
-      });
-  
+        threshold  
+        });
+     
       items.forEach(el => io.observe(el));
     }
   
