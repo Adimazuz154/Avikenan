@@ -25,7 +25,7 @@
     "./christianity-jew":  "Jewelry"
   };
 
-  /* ——— wheel-override when cursor over gallery ——— */
+  /* ——— wheel‐override when cursor over gallery ——— */
   function initWheel() {
     const allowOnPages = ['/', '/press'];
     if (wheelHandler) {
@@ -46,7 +46,7 @@
     window.addEventListener('wheel', wheelHandler, { passive: false });
   }
 
-  /* ——— auto-scroll ticker ——— */
+  /* ——— auto‐scroll ticker ——— */
   function startAutoScroll() {
     const gallery = document.querySelector("#gallery");
     if (!gallery || autoScrollTimer) return;
@@ -64,15 +64,13 @@
     autoScrollTimer = null;
   }
 
-  /* ——— extracted init for auto-scroll + overflow setup ——— */
+  /* ——— init auto‐scroll + overflow setup ——— */
   function initAutoScroll() {
     const gallery = document.querySelector("#gallery");
     if (!gallery) return;
 
-    // stop any existing ticker
     stopAutoScroll();
 
-    // determine orientation
     const isHorizontal = gallery.scrollWidth > gallery.clientWidth;
     if (isHorizontal) {
       gallery.style.overflowY = "hidden";
@@ -82,17 +80,47 @@
     gallery.style.overflowX = "hidden";
     gallery.style.overflowY = "auto";
 
-    // re-bind hover handlers
     gallery.removeEventListener("mouseenter", stopAutoScroll);
     gallery.removeEventListener("mouseleave", startAutoScroll);
     gallery.addEventListener("mouseenter", stopAutoScroll);
     gallery.addEventListener("mouseleave", startAutoScroll);
 
-    // start ticker
     startAutoScroll();
   }
 
-  /* ——— intersection-observer + title/thumbnail swap ——— */
+  /* ——— pick exactly one item to scale ——— */
+  function updateInCenter() {
+    const gallery = document.querySelector('#gallery');
+    if (!gallery) return;
+
+    // within gallery: both links and your two-levels-down div wrappers
+    const items = Array.from(
+      gallery.querySelectorAll('a, :scope > div > div')
+    );
+    if (!items.length) return;
+
+    const gRect    = gallery.getBoundingClientRect();
+    const gMiddleY = gRect.top + gRect.height / 2;
+
+    let closestEl   = null;
+    let closestDist = Infinity;
+
+    items.forEach(el => {
+      const r    = el.getBoundingClientRect();
+      const midY = r.top + r.height / 2;
+      const dist = Math.abs(midY - gMiddleY);
+      if (dist < closestDist) {
+        closestDist = dist;
+        closestEl   = el;
+      }
+    });
+
+    items.forEach(el => {
+      el.classList.toggle('in-center', el === closestEl);
+    });
+  }
+
+  /* ——— intersection‐observer for title & thumbnails only ——— */
   function initObserver() {
     initWheel();
     if (io) io.disconnect();
@@ -106,7 +134,7 @@
         const href = el.getAttribute("href");
 
         if (entry.isIntersecting && hrefMap[href]) {
-          // 2) update main-title text
+          // update main-title
           const newText = hrefMap[href];
           const span    = document.querySelector("#main-title .framer-text span");
           if (span) {
@@ -116,7 +144,7 @@
               : parts[0] + `<br class="framer-text">` + parts.slice(1).join(" ");
           }
 
-          // 3) update thumbnail selection
+          // update thumbnail highlight
           const thumbId = thumbMap[href];
           if (thumbId) {
             if (currentThumbId && currentThumbId !== thumbId) {
@@ -139,42 +167,10 @@
 
     items.forEach(el => io.observe(el));
 
-    // ←—— **new**: whenever the gallery is observed (initial load OR after a route change),
-    // kick off the auto-scroll setup too.
+    // re-init auto-scroll every time
     initAutoScroll();
 
-    function updateInCenter() {
-      const gallery = document.querySelector('#gallery');
-      if (!gallery) return;
-  
-      // grab your <a> links AND your two‐level‐down divs
-      const items = Array.from(
-        gallery.querySelectorAll('a, :scope > div > div')
-      );
-      if (!items.length) return;
-  
-      const gRect    = gallery.getBoundingClientRect();
-      const gMiddleY = gRect.top + gRect.height / 2;
-  
-      let closestEl   = null;
-      let closestDist = Infinity;
-  
-      items.forEach(el => {
-        const r    = el.getBoundingClientRect();
-        const midY = r.top + r.height / 2;
-        const dist = Math.abs(midY - gMiddleY);
-        if (dist < closestDist) {
-          closestDist = dist;
-          closestEl   = el;
-        }
-      });
-  
-      items.forEach(el => {
-        el.classList.toggle('in-center', el === closestEl);
-      });
-    }
-  }
-     // —————— now wire up our “one‐at‐a‐time” scaling ——————
+    // attach our “one‐at‐a‐time” .in-center logic once
     if (!centerListenersAttached) {
       const galleryEl = document.querySelector('#gallery');
       if (galleryEl) {
@@ -187,22 +183,17 @@
               ticking = false;
             });
           }
-        });
+        }, { passive: true });
         window.addEventListener('resize', updateInCenter);
         centerListenersAttached = true;
       }
     }
-    // run once immediately on observer init
+    // run it immediately on observer init
     updateInCenter();
-  }
-
-  // run it immediately on init
-  updateInCenter();
   }
 
   /* ——— SPA navigation hooks ——— */
   function onLocationChange() {
-    // tiny delay to let Framer re-render the DOM
     setTimeout(initObserver, 50);
   }
   const _push = history.pushState;
