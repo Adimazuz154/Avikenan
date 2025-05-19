@@ -1,8 +1,4 @@
-console.log(
-  "📋 bootGallery()", 
-  "width:", window.innerWidth, 
-  "matchDesktop?", window.matchMedia("(min-width:1024px)").matches
-);
+
   (function() {
     let io;
     let wheelHandler = null;
