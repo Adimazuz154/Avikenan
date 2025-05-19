@@ -96,7 +96,7 @@
     initWheel();
     if (io) io.disconnect();
 
-    const items = document.querySelectorAll("#gallery a");
+    const items = document.querySelectorAll("#gallery a, #gallery img");
     if (!items.length) return;
 
     io = new IntersectionObserver((entries) => {
