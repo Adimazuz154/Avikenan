@@ -103,10 +103,7 @@
       entries.forEach(entry => {
         const el   = entry.target;
         const href = el.getAttribute("href");
-
-        // 1) gallery-scale toggle
-        el.classList.toggle("in-center", entry.isIntersecting);
-
+      
         if (entry.isIntersecting && hrefMap[href]) {
           // 2) update main-title text
           const newText = hrefMap[href];
@@ -135,8 +132,8 @@
       });
     }, {
       root:       null,
-      rootMargin: "0px",
-      threshold:  0.5
+      rootMargin: "-50% 0px -50% 0px",
+      threshold:  0
     });
 
     items.forEach(el => io.observe(el));
@@ -166,5 +163,39 @@
 
   /* ——— initial boot ——— */
   document.addEventListener("DOMContentLoaded", initObserver);
+
+  function updateInCenter() {
+  const gallery = document.querySelector('#gallery');
+  if (!gallery) return;
+
+  // ← now selects both <a> and your <div> wrappers
+  const items = Array.from(
+    document.querySelectorAll(
+      '#gallery a, #gallery > div > div'
+    )
+  );
+  if (!items.length) return;
+
+  const gRect    = gallery.getBoundingClientRect();
+  const gMiddleY = gRect.top + gRect.height / 2;
+
+  let closestEl   = null;
+  let closestDist = Infinity;
+
+  items.forEach(el => {
+    const r    = el.getBoundingClientRect();
+    const midY = r.top + r.height / 2;
+    const dist = Math.abs(midY - gMiddleY);
+    if (dist < closestDist) {
+      closestDist = dist;
+      closestEl   = el;
+    }
+  });
+
+  // Only that one closest element gets .in-center
+  items.forEach(el => {
+    el.classList.toggle('in-center', el === closestEl);
+  });
+}
 
 })();
