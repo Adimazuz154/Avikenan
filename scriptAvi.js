@@ -35,7 +35,7 @@
       // figure out if we're scrolling horizontally or vertically
       const isHorizontal = gallery.scrollWidth > gallery.clientWidth;
       const rootMargin   = isHorizontal
-      ? "0px -50% 0px -50%"   // center on X-axis
+      ? "0px -40% 0px -40%"   // center on X-axis
       : "-50% 0px -50% 0px";  // center on Y-axis
       const threshold = isHorizontal ? 0.5 : 0;
   
@@ -78,7 +78,7 @@
       }, {
         root:       null,
         rootMargin,
-        threshold:  0
+        threshold:  
       });
   
       items.forEach(el => io.observe(el));
