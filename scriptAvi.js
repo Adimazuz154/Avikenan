@@ -27,22 +27,11 @@
   
     function initObserver() {
       initWheel();
-
       if (io) io.disconnect();
-      const gallery = document.querySelector("#gallery");
-      if (!gallery) return;
-
-      const items = gallery.querySelectorAll("a");
+  
+      const items = document.querySelectorAll("#gallery a");
       if (!items.length) return;
-      
-      // figure out orientation
-      const isHorizontal = gallery.scrollWidth > gallery.clientWidth;
-      const rootMargin   = isHorizontal
-        ? "0px -50% 0px -50%"
-        : "-50% 0px -50% 0px";
-      // only fire when at least half of the item is within that “center band”
-      const threshold    = isHorizontal ? 0.5 : 0.5;
-
+  
       io = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
           const el   = entry.target;
@@ -81,10 +70,10 @@
         });
       }, {
         root:       null,
-        rootMargin,
-        threshold  
-        });
-     
+        rootMargin: "-50% 0px -50% 0px",
+        threshold:  0
+      });
+  
       items.forEach(el => io.observe(el));
     }
   
