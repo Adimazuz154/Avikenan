@@ -69,6 +69,14 @@
     const gallery = document.querySelector("#gallery");
     if (!gallery) return;
 
+    if (window.location.pathname === '/press') {
+    // make sure it scrolls normally on Y
+    gallery.style.overflowX = 'hidden';
+    gallery.style.overflowY = 'auto';
+    // don’t start the ticker
+    return;
+  }
+
     stopAutoScroll();
 
     const isHorizontal = gallery.scrollWidth > gallery.clientWidth;
