@@ -250,11 +250,14 @@
                 const catKey = cat.toLowerCase();
                 console.log('CatKey:', catKey);
 
-                const span = document.querySelector("#main-title .framer-text span");
-                console.log('Span:', span);
-                if (span) {
+                // Handle both mobile (p) and desktop (span) title elements
+                const isMobile = window.matchMedia("(max-width: 768px)").matches;
+                const titleElement = document.querySelector(isMobile ? "#main-title p" : "#main-title .framer-text span");
+                console.log('Title element:', titleElement);
+
+                if (titleElement) {
                     const parts = cat.split(" ");
-                    span.innerHTML = parts.length === 1
+                    titleElement.innerHTML = parts.length === 1
                         ? parts[0]
                         : parts[0] + "<br>" + parts.slice(1).join(" ");
                 }
