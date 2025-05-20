@@ -227,16 +227,28 @@
           const thumbId = cat.replace(/\s+/g, '-') + '-cat';      // e.g. bronze-cat
           const thumb   = document.getElementById(thumbId);
           if (!thumb) return;                                     // skip if not found
+            thumb.style.cursor = 'pointer';
+            thumb.addEventListener('click', () => {
+              /* confirm which thumbnail fired */
+              console.log('⇢ thumbnail clicked:', cat);
 
-          thumb.style.cursor = 'pointer';
-          thumb.addEventListener('click', () => {
-            console.log('⇢ thumbnail clicked:', cat);
-            /* let the browser figure out the correct axis & distance */
-            firstEl.scrollIntoView({
-              behavior: 'smooth',
-              block:    'start',   // align to top for vertical galleries
-              inline:   'start'    // align to left for horizontal galleries
-            });
+              /* measure element & gallery positions */
+              const gRect = gallery.getBoundingClientRect();
+              const fRect = firstEl.getBoundingClientRect();
+
+              /* distances the gallery needs to scroll (positive = forward)  */
+              const topOff  = fRect.top  - gRect.top  + gallery.scrollTop;
+              const leftOff = fRect.left - gRect.left + gallery.scrollLeft;
+
+              console.log('   offsets  top:', topOff, ' left:', leftOff);
+
+              /* actually scroll – works for both vertical & horizontal */
+              const isHorizontal = gallery.scrollWidth > gallery.clientWidth;
+              gallery.scrollTo({
+                top:    isHorizontal ? 0      : topOff,
+                left:   isHorizontal ? leftOff : 0,
+                behavior: 'smooth'
+              });
           });
         });
 
