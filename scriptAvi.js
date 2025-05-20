@@ -245,13 +245,18 @@
   if (!gallery) return;
 
   document.querySelectorAll('[id$="-cat"]').forEach(thumb => {
+    console.log(thumb);
     /* use the image that fills the square */
     const thumbImg = thumb.querySelector('img') || thumb;
+    console.log(thumbImg);
+
     const cat = (thumbImg.alt || thumb.id)
        .replace(/-cat$/,'')
        .trim()
        .toLowerCase();
 
+       console.log (cat);
+       
         thumbImg.style.cursor = 'pointer';
         thumbImg.addEventListener('click', () => {
           /* ① pause the auto-scroll ticker */
