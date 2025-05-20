@@ -35,7 +35,13 @@
         const items = Array.from(gallery.querySelectorAll('a, :scope > div > div'));
         if (!items.length) return;
 
-        const isHorizontal = gallery.scrollWidth > gallery.clientWidth;
+        // Check if we're on mobile and in press page
+        const isPress = window.location.pathname === "/press";
+        const isMobile = window.matchMedia("(max-width: 768px)").matches;
+
+        // Force vertical mode on mobile press page
+        const isHorizontal = !(isPress && isMobile) && gallery.scrollWidth > gallery.clientWidth;
+
         const gRect = gallery.getBoundingClientRect();
         const galleryMid = isHorizontal
             ? gRect.left + gRect.width / 2
@@ -50,13 +56,23 @@
                 ? (r.left + r.width / 2)
                 : (r.top + r.height / 2);
 
+            // Calculate distance based on scroll direction
             const dist = Math.abs(elMid - galleryMid);
-            if (dist < closestDist) {
-                closestDist = dist;
+
+            // Add a small bias for items that are more visible
+            const visibilityBias = isHorizontal
+                ? Math.min(r.width, gRect.width) / 2
+                : Math.min(r.height, gRect.height) / 2;
+
+            const adjustedDist = dist - visibilityBias;
+
+            if (adjustedDist < closestDist) {
+                closestDist = adjustedDist;
                 closestEl = el;
             }
         });
 
+        // Update classes
         items.forEach(el => {
             el.classList.toggle('in-center', el === closestEl);
         });
