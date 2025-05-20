@@ -246,7 +246,7 @@
     thumb.addEventListener('click', () => {
       console.log("click")
     const targetImg = gallery.querySelector(`img[alt="${cat}"]`);
-    console.log(`▶ clicked thumb for '${cat}' → target img id="${targetImg.id}", alt="${targetImg.alt}"`);
+    console.log(`▶ clicked thumb for '${cat}' → wrapper id="${wrapper.id}", alt="${targetImg.alt}"`);
     if (!targetImg) return;
 
     const wrapper = targetImg.closest('a, div') || targetImg;
