@@ -212,29 +212,34 @@
         /* already in your code … */
     updateInCenter();              // keep this line
 
-    /* =====  Make side-thumbnails clickable (run once)  ===== */
     if (!jumpListenersAttached) {
       const gallery = document.querySelector('#gallery');
       if (gallery) {
-        /* --- 1) category → first element lookup --- */
-        const catFirstEl = {};   // { "bronze": <a …>, … }
-
+        /* 1) category → first-element lookup */
+        const catFirstEl = {};                         // { "bronze": <a …>, … }
         gallery.querySelectorAll('a, :scope > div > div').forEach(el => {
           const cat = el.querySelector('img')?.alt?.trim().toLowerCase();
           if (cat && !(cat in catFirstEl)) catFirstEl[cat] = el;  // keep first only
         });
 
-        /* --- 2) attach click handlers to thumbnails --- */
+        /* 2) attach click handlers to thumbnails */
         Object.entries(catFirstEl).forEach(([cat, firstEl]) => {
           const thumbId = cat.replace(/\s+/g, '-') + '-cat';      // e.g. bronze-cat
           const thumb   = document.getElementById(thumbId);
-          if (!thumb) return;
+          if (!thumb) return;                                     // skip if not found
 
           thumb.style.cursor = 'pointer';
           thumb.addEventListener('click', () => {
-            firstEl.scrollIntoView({ behavior: "smooth", block: "start", inline: "start" });
+            /* let the browser figure out the correct axis & distance */
+            firstEl.scrollIntoView({
+              behavior: 'smooth',
+              block:    'start',   // align to top for vertical galleries
+              inline:   'start'    // align to left for horizontal galleries
             });
-          jumpListenersAttached = true;   // don’t wire them again
+          });
+        });
+
+        jumpListenersAttached = true;   // don’t wire them again
       }
     }
 
