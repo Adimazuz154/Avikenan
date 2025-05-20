@@ -201,18 +201,22 @@
         io = new IntersectionObserver((entries) => {
             console.log('Intersection observer callback:', entries.length, 'entries');
             entries.forEach(entry => {
+                console.log('Entry:', entry);
                 if (!entry.isIntersecting) return;
-
+                console.log('Entry is intersecting');
                 const el = entry.target;
                 const img = el.querySelector("img");
+                console.log('El:', el);
                 if (!img) return;
-
+                console.log('Img:', img);
                 const catRaw = img.alt || "";
+                console.log('CatRaw:', catRaw);
                 if (!catRaw) return;
                 const cat = catRaw.trim();
                 const catKey = cat.toLowerCase();
-
+                console.log('CatKey:', catKey);
                 const span = document.querySelector("#main-title .framer-text span");
+                console.log('Span:', span);
                 if (span) {
                     const parts = cat.split(" ");
                     span.innerHTML = parts.length === 1
