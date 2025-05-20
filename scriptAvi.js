@@ -133,14 +133,6 @@
   });
 }
 
-  function offsetWithin(container, element, axis /* 'y' | 'x' */ = 'y') {
-  const cRect = container.getBoundingClientRect();
-  const eRect = element.getBoundingClientRect();
-  return axis === 'y'
-    ? eRect.top  - cRect.top  + container.scrollTop
-    : eRect.left - cRect.left + container.scrollLeft;
-}
-
   /* ——— intersection‐observer for title & thumbnails only ——— */
   function initObserver() {
     initWheel();
@@ -149,54 +141,54 @@
     const items = document.querySelectorAll("#gallery a, #gallery > div > div");
     if (!items.length) return;
 
-        /* ——— create the observer ——— */
     io = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (!entry.isIntersecting) return;        // ignore off-screen items
+    entries.forEach(entry => {
+    if (!entry.isIntersecting) return;        // ignore off-screen items
 
-        const el  = entry.target;
-        const img = el.querySelector("img");
-        if (!img) return;
+    const el  = entry.target;
+    const img = el.querySelector("img");
+    if (!img)   return;
 
-        /* category comes from <img alt="…"> */
-        const catRaw = img.alt || "";
-        if (!catRaw) return;
-        const catKey = catRaw.trim().toLowerCase();   // e.g. "bronze"
+    /* ------------- get the category from <img alt="…"> ------------- */
+    const catRaw = img.alt || "";             // whatever you typed in Alt
+    if (!catRaw) return;
+    const cat    = catRaw.trim();             // e.g. "Bronze"
+    const catKey = cat.toLowerCase();         // "bronze"
 
-        /* 1) big heading */
-        const span = document.querySelector("#main-title .framer-text span");
-        if (span) {
-          const parts = catRaw.split(" ");
-          span.innerHTML = parts.length === 1
-            ? parts[0]
-            : parts[0] + "<br>" + parts.slice(1).join(" ");
-        }
+    /* ========== 1) update the main title ========== */
+    const span = document.querySelector("#main-title .framer-text span");
+    if (span) {
+      const parts = cat.split(" ");
+      span.innerHTML = parts.length === 1
+        ? parts[0]                                   // one-word category
+        : parts[0] + "<br>" + parts.slice(1).join(" "); // two+ words stacked
+    }
 
-        /* 2) side thumbnail highlight */
-        const thumbId = thumbMap[catKey];
-        if (thumbId) {
-          if (currentThumbId && currentThumbId !== thumbId) {
-            document.getElementById(currentThumbId)
-                    ?.classList.remove("selected");
-          }
-          document.getElementById(thumbId)
-                  ?.classList.add("selected");
-          currentThumbId = thumbId;
-        }
-      });
-    }, {
-      root:       null,
-      rootMargin: "-50% 0px -50% 0px",
-      threshold:  0
-    });
+    /* ========== 2) highlight the small thumbnail ========== */
+    const thumbId = thumbMap[catKey];
+    if (thumbId) {
+      if (currentThumbId && currentThumbId !== thumbId) {
+        document.getElementById(currentThumbId)
+                ?.classList.remove("selected");
+      }
+      document.getElementById(thumbId)
+              ?.classList.add("selected");
+      currentThumbId = thumbId;
+    }
+  });
+}, {
+  root:       null,
+  rootMargin: "-50% 0px -50% 0px",
+  threshold:  0
+});
 
-    /* observe every gallery item */
+
     items.forEach(el => io.observe(el));
 
-    /* re-init wheel & auto-scroll */
+    // re-init auto-scroll every time
     initAutoScroll();
 
-    /* ——— one-at-a-time scaling listeners (wired once) ——— */
+    // attach our “one‐at‐a‐time” .in-center logic once
     if (!centerListenersAttached) {
       const galleryEl = document.querySelector('#gallery');
       if (galleryEl) {
@@ -214,60 +206,9 @@
         centerListenersAttached = true;
       }
     }
-    
-    updateInCenter();   // run immediately
-
-    if (!centerListenersAttached) {
-      const galleryEl = document.querySelector('#gallery');
-      if (galleryEl) {
-        let ticking = false;
-        galleryEl.addEventListener('scroll', () => {
-          if (!ticking) {
-            ticking = true;
-            requestAnimationFrame(() => {
-              updateInCenter();
-              ticking = false;
-            });
-          }
-        }, { passive: true });
-        window.addEventListener('resize', updateInCenter);
-        centerListenersAttached = true;
-      }
-    }
-
-    /* ═════ make side-thumbnails jump to their category (wire once) ═════ */
-    if (!jumpListenersAttached) {
-      const gallery = document.querySelector('#gallery');
-      if (gallery) {
-        /* 1️⃣  build map  category → first element */
-        const catFirstEl = {};                             // { "painted": <div …>, … }
-        gallery.querySelectorAll('a, :scope > div > div').forEach(el => {
-          const cat = el.querySelector('img')?.alt?.trim().toLowerCase();
-          if (cat && !(cat in catFirstEl)) catFirstEl[cat] = el;   // keep the first one
-        });
-
-        /* 2️⃣  turn each thumbnail into a jump button */
-        Object.entries(catFirstEl).forEach(([cat, firstEl]) => {
-          const thumb = document.getElementById(cat.replace(/\s+/g, '-') + '-cat'); // painted → painted-cat
-          if (!thumb) return;                                      // skip if ID not found
-
-        thumb.style.cursor = 'pointer';
-        thumb.addEventListener('click', () => {
-         const isHorizontal = gallery.scrollWidth > gallery.clientWidth;
-          const target = offsetWithin(gallery, firstEl, isHorizontal ? 'x' : 'y');
-
-            gallery.scrollTo({
-              behavior: 'smooth',
-              top:  isHorizontal ? 0      : target,
-              left: isHorizontal ? target : 0
-            });
-          });
-        });
-
-        jumpListenersAttached = true;   // listeners are now in place
-      }
-    }
-  }  
+    // run it immediately on observer init
+    updateInCenter();
+  }
 
   /* ——— SPA navigation hooks ——— */
   function onLocationChange() {
