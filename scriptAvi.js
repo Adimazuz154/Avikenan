@@ -244,27 +244,31 @@
 
     thumb.style.cursor = 'pointer';
     thumb.addEventListener('click', () => {
-      console.log("click")
-    const targetImg = gallery.querySelector(`img[alt="${cat}"]`);
-    console.log(`▶ clicked thumb for '${cat}' → wrapper id="${wrapper.id}", alt="${targetImg.alt}"`);
-    if (!targetImg) return;
+  /* find the first gallery <img> with the matching alt */
+  const targetImg = gallery.querySelector(`img[alt="${cat}"]`);
+  if (!targetImg) return;
 
-    const wrapper = targetImg.closest('a, div') || targetImg;
-    const isHorizontal = gallery.scrollWidth > gallery.clientWidth + 10; // +10 for rounding
+  /* get its wrapper (the element your observer watches) */
+  const wrapper = targetImg.closest('a, div') || targetImg;
 
-    // --- measure offset on the relevant axis ---
-    const gRect = gallery.getBoundingClientRect();
-    const wRect = wrapper.getBoundingClientRect();
-    const offset = isHorizontal
-      ? wRect.left - gRect.left + gallery.scrollLeft   // X distance inside gallery
-      : wRect.top  - gRect.top  + gallery.scrollTop;   // Y distance
+  /* now wrapper exists → we can log it safely */
+  console.log(
+    `▶ clicked thumb '${cat}' → wrapper id="${wrapper.id}", img alt="${targetImg.alt}"`
+  );
 
-    // --- scroll only that axis ---
-    gallery.scrollTo({
-      behavior: 'smooth',
-      left: isHorizontal ? offset : 0,
-      top:  isHorizontal ? 0       : offset
-    });
+  /* decide axis and scroll only that axis */
+  const isHorizontal = gallery.scrollWidth > gallery.clientWidth + 10;
+  const gRect        = gallery.getBoundingClientRect();
+  const wRect        = wrapper.getBoundingClientRect();
+  const offset       = isHorizontal
+    ? wRect.left - gRect.left + gallery.scrollLeft
+    : wRect.top  - gRect.top  + gallery.scrollTop;
+
+  gallery.scrollTo({
+    behavior: 'smooth',
+    left: isHorizontal ? offset : 0,
+    top:  isHorizontal ? 0      : offset
+  });
   });
   });
 })();
