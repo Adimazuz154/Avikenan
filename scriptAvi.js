@@ -9,7 +9,7 @@
   // map gallery href → thumbnail ID
   const thumbMap = {
     "bronze":      "bronze-cat",
-    "painted": "painting-cat",
+    "painted": "painted-cat",
     "monumental":         "monumental-cat",
     "photography":      "photography-cat",
     "conceptual":       "conceptual-cat",
