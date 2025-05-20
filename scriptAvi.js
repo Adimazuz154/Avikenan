@@ -198,23 +198,56 @@
             return;
         }
 
+        // Create a new observer for center detection
+        const centerObserver = new IntersectionObserver((entries) => {
+            console.log('Center observer entries:', entries.length);
+
+            // Find the entry with the highest intersection ratio
+            let maxRatio = 0;
+            let centerEntry = null;
+
+            entries.forEach(entry => {
+                console.log('Entry ratio:', entry.intersectionRatio);
+                if (entry.intersectionRatio > maxRatio) {
+                    maxRatio = entry.intersectionRatio;
+                    centerEntry = entry;
+                }
+            });
+
+            // Update center class
+            items.forEach(el => {
+                el.classList.toggle('in-center', el === centerEntry?.target);
+            });
+        }, {
+            root: document.querySelector('#gallery'),
+            threshold: [0, 0.25, 0.5, 0.75, 1],
+            rootMargin: '-45% 0px -45% 0px'
+        });
+
+        // Observe all items for center detection
+        items.forEach(el => centerObserver.observe(el));
+
+        // Original observer for category updates
         io = new IntersectionObserver((entries) => {
-            console.log('Intersection observer callback:', entries.length, 'entries');
+            console.log('Category observer callback:', entries.length, 'entries');
             entries.forEach(entry => {
                 console.log('Entry:', entry);
                 if (!entry.isIntersecting) return;
                 console.log('Entry is intersecting');
+
                 const el = entry.target;
                 const img = el.querySelector("img");
                 console.log('El:', el);
                 if (!img) return;
                 console.log('Img:', img);
+
                 const catRaw = img.alt || "";
                 console.log('CatRaw:', catRaw);
                 if (!catRaw) return;
                 const cat = catRaw.trim();
                 const catKey = cat.toLowerCase();
                 console.log('CatKey:', catKey);
+
                 const span = document.querySelector("#main-title .framer-text span");
                 console.log('Span:', span);
                 if (span) {
@@ -242,31 +275,15 @@
         items.forEach(el => io.observe(el));
         initAutoScroll();
 
-        if (!centerListenersAttached) {
-            console.log('Attaching center listeners');
+        // Remove the old scroll-based center detection
+        if (centerListenersAttached) {
             const galleryEl = document.querySelector('#gallery');
             if (galleryEl) {
-                let ticking = false;
-                galleryEl.addEventListener('scroll', () => {
-                    console.log('Scroll event fired');
-                    if (!ticking) {
-                        ticking = true;
-                        requestAnimationFrame(() => {
-                            updateInCenter();
-                            ticking = false;
-                        });
-                    }
-                }, { passive: true });
-                window.addEventListener('resize', () => {
-                    console.log('Resize event fired');
-                    updateInCenter();
-                });
-                centerListenersAttached = true;
-            } else {
-                console.log('No gallery element found for attaching listeners');
+                galleryEl.removeEventListener('scroll', updateInCenter);
+                window.removeEventListener('resize', updateInCenter);
             }
         }
-        updateInCenter();
+        centerListenersAttached = true;
     }
 
     function attachThumbnailJumps() {
