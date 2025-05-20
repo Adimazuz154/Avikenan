@@ -9,7 +9,7 @@
   // map gallery href → thumbnail ID
   const thumbMap = {
     "bronze":      "bronze-cat",
-    "painted": "painted-cat",
+    "painted": "painting-cat",
     "monumental":         "monumental-cat",
     "photography":      "photography-cat",
     "conceptual":       "conceptual-cat",
@@ -245,12 +245,15 @@
   if (!gallery) return;
 
   document.querySelectorAll('[id$="-cat"]').forEach(thumb => {
-    const cat = (thumb.alt || thumb.id)
-        .replace(/-cat$/,'')
-        .trim()
-        .toLowerCase();
-        thumb.style.cursor = 'pointer';
-        thumb.addEventListener('click', () => {
+    /* use the image that fills the square */
+    const thumbImg = thumb.querySelector('img') || thumb;
+    const cat = (thumbImg.alt || thumb.id)
+       .replace(/-cat$/,'')
+       .trim()
+       .toLowerCase();
+
+        thumbImg.style.cursor = 'pointer';
+        thumbImg.addEventListener('click', () => {
           /* ① pause the auto-scroll ticker */
           stopAutoScroll();
 
