@@ -29,28 +29,47 @@
     }
 
     function updateInCenter() {
+        console.log('updateInCenter called');
         const gallery = document.querySelector('#gallery');
-        if (!gallery) return;
+        if (!gallery) {
+            console.log('No gallery found');
+            return;
+        }
 
         const items = Array.from(gallery.querySelectorAll('a, :scope > div > div'));
-        if (!items.length) return;
+        if (!items.length) {
+            console.log('No items found in gallery');
+            return;
+        }
 
         // Check if we're on mobile and in press page
         const isPress = window.location.pathname === "/press";
         const isMobile = window.matchMedia("(max-width: 768px)").matches;
+        console.log('Device state:', { isPress, isMobile });
 
         // Force vertical mode on mobile press page
         const isHorizontal = !(isPress && isMobile) && gallery.scrollWidth > gallery.clientWidth;
+        console.log('Scroll direction:', {
+            isHorizontal,
+            scrollWidth: gallery.scrollWidth,
+            clientWidth: gallery.clientWidth,
+            scrollHeight: gallery.scrollHeight,
+            clientHeight: gallery.clientHeight
+        });
 
         const gRect = gallery.getBoundingClientRect();
         const galleryMid = isHorizontal
             ? gRect.left + gRect.width / 2
             : gRect.top + gRect.height / 2;
+        console.log('Gallery dimensions:', {
+            rect: gRect,
+            midPoint: galleryMid
+        });
 
         let closestEl = null;
         let closestDist = Infinity;
 
-        items.forEach(el => {
+        items.forEach((el, index) => {
             const r = el.getBoundingClientRect();
             const elMid = isHorizontal
                 ? (r.left + r.width / 2)
@@ -66,10 +85,24 @@
 
             const adjustedDist = dist - visibilityBias;
 
+            console.log(`Item ${index} metrics:`, {
+                element: el,
+                rect: r,
+                midPoint: elMid,
+                distance: dist,
+                bias: visibilityBias,
+                adjustedDistance: adjustedDist
+            });
+
             if (adjustedDist < closestDist) {
                 closestDist = adjustedDist;
                 closestEl = el;
             }
+        });
+
+        console.log('Selected element:', {
+            element: closestEl,
+            distance: closestDist
         });
 
         // Update classes
@@ -155,13 +188,18 @@
     }
 
     function initObserver() {
+        console.log('initObserver called');
         initWheel();
         if (io) io.disconnect();
 
         const items = document.querySelectorAll("#gallery a, #gallery > div > div");
-        if (!items.length) return;
+        if (!items.length) {
+            console.log('No items found for observer');
+            return;
+        }
 
         io = new IntersectionObserver((entries) => {
+            console.log('Intersection observer callback:', entries.length, 'entries');
             entries.forEach(entry => {
                 if (!entry.isIntersecting) return;
 
@@ -201,10 +239,12 @@
         initAutoScroll();
 
         if (!centerListenersAttached) {
+            console.log('Attaching center listeners');
             const galleryEl = document.querySelector('#gallery');
             if (galleryEl) {
                 let ticking = false;
                 galleryEl.addEventListener('scroll', () => {
+                    console.log('Scroll event fired');
                     if (!ticking) {
                         ticking = true;
                         requestAnimationFrame(() => {
@@ -213,8 +253,13 @@
                         });
                     }
                 }, { passive: true });
-                window.addEventListener('resize', updateInCenter);
+                window.addEventListener('resize', () => {
+                    console.log('Resize event fired');
+                    updateInCenter();
+                });
                 centerListenersAttached = true;
+            } else {
+                console.log('No gallery element found for attaching listeners');
             }
         }
         updateInCenter();
