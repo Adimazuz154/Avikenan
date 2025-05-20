@@ -286,7 +286,7 @@
           if ('onscrollend' in document) {
             gallery.addEventListener('scrollend', resume, { once: true });
           } else {
-            setTimeout(resume, 600);          // fallback if scrollend unsupported
+            setTimeout(resume, 1500);          // fallback if scrollend unsupported
           }
         });
             });
