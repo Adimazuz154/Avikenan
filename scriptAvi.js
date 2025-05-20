@@ -243,42 +243,38 @@
                   .toLowerCase();
 
     thumb.style.cursor = 'pointer';
-thumb.addEventListener('click', () => {
-  /* 1️⃣  find the first gallery image for this category */
-  const img = gallery.querySelector(`img[alt="${cat}"]`);
-  if (!img) {
-    console.warn(`❌ no img[alt="${cat}"] inside #gallery`);
-    return;
-  }
+    thumb.addEventListener('click', () => {
+      const img = gallery.querySelector(`img[alt="${cat}"]`);
+      if (!img) return;
 
-  /* 2️⃣  the wrapper we want to reveal */
-  const wrapper = img.closest('a, div') || img;
+      const wrapper = img.closest('a, div') || img;
+      const isVertical = gallery.scrollHeight > gallery.clientHeight + 10;
 
-  /* 3️⃣  decide scroll axis */
-  const isVertical = gallery.scrollHeight > gallery.clientHeight + 10;   // true on desktop
+      /* 1️⃣  offset inside gallery using offsetTop / offsetLeft */
+      const offset = isVertical
+        ? wrapper.offsetTop   // distance from top of #gallery
+        : wrapper.offsetLeft; // distance from left
 
-  /* 4️⃣  compute offset inside the gallery’s own scroll space */
-  const gRect = gallery.getBoundingClientRect();
-  const wRect = wrapper.getBoundingClientRect();
-  const offset = isVertical
-    ? wRect.top  - gRect.top  + gallery.scrollTop
-    : wRect.left - gRect.left + gallery.scrollLeft;
+      /* 2️⃣  clamp to scrollable range */
+      const maxScroll = isVertical
+        ? gallery.scrollHeight - gallery.clientHeight
+        : gallery.scrollWidth  - gallery.clientWidth;
 
-  /* 5️⃣  debug output */
-  console.log(
-    `▶ clicked thumb '${cat}' — scrolling ` +
-    (isVertical ? 'top' : 'left') +
-    ` to ${offset}`
-  );
+      const target = Math.max(0, Math.min(offset, maxScroll));
 
-  /* 6️⃣  smooth scroll on the correct axis only */
-  gallery.scrollTo({
-    behavior: 'smooth',
-    top:  isVertical ? offset : 0,
-    left: isVertical ? 0      : offset
-      });
+      /* 3️⃣  debug */
+      console.log(
+        `▶ thumb '${cat}' — scrolling ${isVertical ? 'top' : 'left'} to`, target
+      );
+
+      /* 4️⃣  scroll only on the relevant axis */
+      if (isVertical) {
+        gallery.scrollTo({ top: target, behavior: 'smooth' });
+      } else {
+        gallery.scrollTo({ left: target, behavior: 'smooth' });
+      }
     });
-  });
+      });
 })();
 
 })();
