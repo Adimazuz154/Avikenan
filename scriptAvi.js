@@ -141,54 +141,54 @@
     const items = document.querySelectorAll("#gallery a, #gallery > div > div");
     if (!items.length) return;
 
+        /* ——— create the observer ——— */
     io = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-    if (!entry.isIntersecting) return;        // ignore off-screen items
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;        // ignore off-screen items
 
-    const el  = entry.target;
-    const img = el.querySelector("img");
-    if (!img)   return;
+        const el  = entry.target;
+        const img = el.querySelector("img");
+        if (!img) return;
 
-    /* ------------- get the category from <img alt="…"> ------------- */
-    const catRaw = img.alt || "";             // whatever you typed in Alt
-    if (!catRaw) return;
-    const cat    = catRaw.trim();             // e.g. "Bronze"
-    const catKey = cat.toLowerCase();         // "bronze"
+        /* category comes from <img alt="…"> */
+        const catRaw = img.alt || "";
+        if (!catRaw) return;
+        const catKey = catRaw.trim().toLowerCase();   // e.g. "bronze"
 
-    /* ========== 1) update the main title ========== */
-    const span = document.querySelector("#main-title .framer-text span");
-    if (span) {
-      const parts = cat.split(" ");
-      span.innerHTML = parts.length === 1
-        ? parts[0]                                   // one-word category
-        : parts[0] + "<br>" + parts.slice(1).join(" "); // two+ words stacked
-    }
+        /* 1) big heading */
+        const span = document.querySelector("#main-title .framer-text span");
+        if (span) {
+          const parts = catRaw.split(" ");
+          span.innerHTML = parts.length === 1
+            ? parts[0]
+            : parts[0] + "<br>" + parts.slice(1).join(" ");
+        }
 
-    /* ========== 2) highlight the small thumbnail ========== */
-    const thumbId = thumbMap[catKey];
-    if (thumbId) {
-      if (currentThumbId && currentThumbId !== thumbId) {
-        document.getElementById(currentThumbId)
-                ?.classList.remove("selected");
-      }
-      document.getElementById(thumbId)
-              ?.classList.add("selected");
-      currentThumbId = thumbId;
-    }
-  });
-}, {
-  root:       null,
-  rootMargin: "-50% 0px -50% 0px",
-  threshold:  0
-});
+        /* 2) side thumbnail highlight */
+        const thumbId = thumbMap[catKey];
+        if (thumbId) {
+          if (currentThumbId && currentThumbId !== thumbId) {
+            document.getElementById(currentThumbId)
+                    ?.classList.remove("selected");
+          }
+          document.getElementById(thumbId)
+                  ?.classList.add("selected");
+          currentThumbId = thumbId;
+        }
+      });
+    }, {
+      root:       null,
+      rootMargin: "-50% 0px -50% 0px",
+      threshold:  0
+    });
 
-
+    /* observe every gallery item */
     items.forEach(el => io.observe(el));
 
-    // re-init auto-scroll every time
+    /* re-init wheel & auto-scroll */
     initAutoScroll();
 
-    // attach our “one‐at‐a‐time” .in-center logic once
+    /* ——— one-at-a-time scaling listeners (wired once) ——— */
     if (!centerListenersAttached) {
       const galleryEl = document.querySelector('#gallery');
       if (galleryEl) {
@@ -206,55 +206,41 @@
         centerListenersAttached = true;
       }
     }
-    // run it immediately on observer init
-    updateInCenter();
-  }
-        /* already in your code … */
-    updateInCenter();              // keep this line
+    updateInCenter();   // run immediately
 
+    /* ——— make thumbnails jump to first item of their category (once) ——— */
     if (!jumpListenersAttached) {
       const gallery = document.querySelector('#gallery');
       if (gallery) {
-        /* 1) category → first-element lookup */
-        const catFirstEl = {};                         // { "bronze": <a …>, … }
+        /* 1) map category → first element */
+        const catFirstEl = {};
         gallery.querySelectorAll('a, :scope > div > div').forEach(el => {
           const cat = el.querySelector('img')?.alt?.trim().toLowerCase();
-          if (cat && !(cat in catFirstEl)) catFirstEl[cat] = el;  // keep first only
+          if (cat && !(cat in catFirstEl)) catFirstEl[cat] = el;
         });
 
-        /* 2) attach click handlers to thumbnails */
+        /* 2) attach click handler */
         Object.entries(catFirstEl).forEach(([cat, firstEl]) => {
-          const thumbId = cat.replace(/\s+/g, '-') + '-cat';      // e.g. bronze-cat
+          const thumbId = cat.replace(/\s+/g, '-') + '-cat';
           const thumb   = document.getElementById(thumbId);
-          if (!thumb) return;                                     // skip if not found
-            thumb.style.cursor = 'pointer';
-            thumb.addEventListener('click', () => {
-              /* confirm which thumbnail fired */
-              console.log('⇢ thumbnail clicked:', cat);
+          if (!thumb) return;
 
-              /* measure element & gallery positions */
-              const gRect = gallery.getBoundingClientRect();
-              const fRect = firstEl.getBoundingClientRect();
-
-              /* distances the gallery needs to scroll (positive = forward)  */
-              const topOff  = fRect.top  - gRect.top  + gallery.scrollTop;
-              const leftOff = fRect.left - gRect.left + gallery.scrollLeft;
-
-              console.log('   offsets  top:', topOff, ' left:', leftOff);
-
-              /* actually scroll – works for both vertical & horizontal */
-              const isHorizontal = gallery.scrollWidth > gallery.clientWidth;
-              gallery.scrollTo({
-                top:    isHorizontal ? 0      : topOff,
-                left:   isHorizontal ? leftOff : 0,
-                behavior: 'smooth'
-              });
+          thumb.style.cursor = 'pointer';
+          thumb.addEventListener('click', () => {
+            firstEl.scrollIntoView({
+              behavior: 'smooth',
+              block:    'start',
+              inline:   'start'
+            });
           });
         });
 
-        jumpListenersAttached = true;   // don’t wire them again
+        jumpListenersAttached = true;
       }
     }
+  }  /* ← end of initObserver() */
+    
+  
 
   /* ——— SPA navigation hooks ——— */
   function onLocationChange() {
