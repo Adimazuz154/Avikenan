@@ -243,6 +243,8 @@
 
     // Main initialization function
     function initPage() {
+        centerListenersAttached = false;
+        jumpListenersAttached = false;
         initObserver();
         attachThumbnailJumps();
     }
