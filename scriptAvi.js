@@ -243,33 +243,41 @@
                   .toLowerCase();
 
     thumb.style.cursor = 'pointer';
-    thumb.addEventListener('click', () => {
-  /* find the first gallery <img> with the matching alt */
-  const targetImg = gallery.querySelector(`img[alt="${cat}"]`);
-  if (!targetImg) return;
+thumb.addEventListener('click', () => {
+  /* 1️⃣  find the first gallery image for this category */
+  const img = gallery.querySelector(`img[alt="${cat}"]`);
+  if (!img) {
+    console.warn(`❌ no img[alt="${cat}"] inside #gallery`);
+    return;
+  }
 
-  /* get its wrapper (the element your observer watches) */
-  const wrapper = targetImg.closest('a, div') || targetImg;
+  /* 2️⃣  the wrapper we want to reveal */
+  const wrapper = img.closest('a, div') || img;
 
-  /* now wrapper exists → we can log it safely */
+  /* 3️⃣  decide scroll axis */
+  const isVertical = gallery.scrollHeight > gallery.clientHeight + 10;   // true on desktop
+
+  /* 4️⃣  compute offset inside the gallery’s own scroll space */
+  const gRect = gallery.getBoundingClientRect();
+  const wRect = wrapper.getBoundingClientRect();
+  const offset = isVertical
+    ? wRect.top  - gRect.top  + gallery.scrollTop
+    : wRect.left - gRect.left + gallery.scrollLeft;
+
+  /* 5️⃣  debug output */
   console.log(
-    `▶ clicked thumb '${cat}' → wrapper id="${wrapper.id}", img alt="${targetImg.alt}"`
+    `▶ clicked thumb '${cat}' — scrolling ` +
+    (isVertical ? 'top' : 'left') +
+    ` to ${offset}`
   );
 
-  /* decide axis and scroll only that axis */
-  const isHorizontal = gallery.scrollWidth > gallery.clientWidth + 10;
-  const gRect        = gallery.getBoundingClientRect();
-  const wRect        = wrapper.getBoundingClientRect();
-  const offset       = isHorizontal
-    ? wRect.left - gRect.left + gallery.scrollLeft
-    : wRect.top  - gRect.top  + gallery.scrollTop;
-
+  /* 6️⃣  smooth scroll on the correct axis only */
   gallery.scrollTo({
     behavior: 'smooth',
-    left: isHorizontal ? offset : 0,
-    top:  isHorizontal ? 0      : offset
-  });
-  });
+    top:  isVertical ? offset : 0,
+    left: isVertical ? 0      : offset
+      });
+    });
   });
 })();
 
