@@ -9,7 +9,7 @@
   // map gallery href → thumbnail ID
   const thumbMap = {
     "bronze":      "bronze-cat",
-    "painted": "painted-cat",
+    "painted": "painting-cat",
     "monumental":         "monumental-cat",
     "photography":      "photography-cat",
     "conceptual":       "conceptual-cat",
@@ -209,7 +209,9 @@
     // run it immediately on observer init
     updateInCenter();
   }
-
+        /* already in your code … */
+    updateInCenter();              // keep this line
+    
   /* ——— SPA navigation hooks ——— */
   function onLocationChange() {
     setTimeout(initObserver, 50);
@@ -229,5 +231,30 @@
 
   /* ——— initial boot ——— */
   document.addEventListener("DOMContentLoaded", initObserver);
+
+  (function attachThumbnailJumps() {
+  const gallery = document.querySelector('#gallery');
+  if (!gallery) return;
+
+  document.querySelectorAll('[id$="-cat"]').forEach(thumb => {
+    const cat = (thumb.alt || thumb.id)
+                  .replace(/-cat$/,'')
+                  .trim()
+                  .toLowerCase();
+
+    thumb.style.cursor = 'pointer';
+    thumb.addEventListener('click', () => {
+      /* exact alt match — works if you typed lower-case words */
+      const targetImg  = gallery.querySelector(`img[alt="${cat}"]`);
+      if (!targetImg) return;
+
+      targetImg.closest('a, div')?.scrollIntoView({
+        behavior: 'smooth',
+        block:    'start',
+        inline:   'start'
+      });
+    });
+  });
+})();
 
 })();
