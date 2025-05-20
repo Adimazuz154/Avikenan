@@ -230,6 +230,7 @@
 
           thumb.style.cursor = 'pointer';
           thumb.addEventListener('click', () => {
+            console.log('⇢ thumbnail clicked:', cat);
             /* let the browser figure out the correct axis & distance */
             firstEl.scrollIntoView({
               behavior: 'smooth',
