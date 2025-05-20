@@ -9,7 +9,7 @@
   // map gallery href → thumbnail ID
   const thumbMap = {
     "bronze":      "bronze-cat",
-    "painted": "painted-cat",
+    "painted": "painting-cat",
     "monumental":         "monumental-cat",
     "photography":      "photography-cat",
     "conceptual":       "conceptual-cat",
@@ -244,7 +244,9 @@
 
     thumb.style.cursor = 'pointer';
     thumb.addEventListener('click', () => {
+      console.log("click")
     const targetImg = gallery.querySelector(`img[alt="${cat}"]`);
+    console.log(`found alt ${alt}`)
     if (!targetImg) return;
 
     const wrapper = targetImg.closest('a, div') || targetImg;
