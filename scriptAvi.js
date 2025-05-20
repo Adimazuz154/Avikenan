@@ -249,38 +249,27 @@
                   .replace(/-cat$/,'')
                   .trim()
                   .toLowerCase();
-
         thumb.style.cursor = "pointer";
-      thumb.addEventListener("click", () => {
-        /* first gallery image with matching alt */
-        const img = gallery.querySelector(`img[alt="${cat}"]`);
-        if (!img) return;
+        thumb.addEventListener("click", () => {
+          /* first matching gallery image */
+          const img = gallery.querySelector(`img[alt="${cat}"]`);
+          if (!img) return;
 
-        const wrapper    = img.closest("a, div") || img;
-        const isVertical = gallery.scrollHeight > gallery.clientHeight + 10;
+          const wrapper    = img.closest("a, div") || img;
+          const isVertical = gallery.scrollHeight > gallery.clientHeight + 10;
 
-        /* distance inside #gallery */
-        const axisOffset = offsetWithin(gallery, wrapper, isVertical ? "y" : "x");
+          /* debug */
+          console.log(
+            `▶ thumb '${cat}' — scrollIntoView (${isVertical ? "vertical" : "horizontal"})`
+          );
 
-        /* clamp to scrollable range */
-        const maxScroll  = isVertical
-          ? gallery.scrollHeight - gallery.clientHeight
-          : gallery.scrollWidth  - gallery.clientWidth;
-
-        const target = Math.max(0, Math.min(axisOffset, maxScroll));
-
-        /* ▶︎ keep the debug output */
-        console.log(
-          `▶ thumb '${cat}' — scrolling ${isVertical ? "top" : "left"} to`, target
-        );
-
-        /* smooth scroll on the correct axis only */
-        gallery.scrollTo({
-          behavior: "smooth",
-          top:  isVertical ? target : 0,
-          left: isVertical ? 0      : target
+          /* scroll only the needed axis */
+          wrapper.scrollIntoView({
+            behavior: "smooth",
+            block:  isVertical ? "start"   : "nearest",  // vertical axis
+            inline: isVertical ? "nearest" : "start"     // horizontal axis
+          });
         });
-      });
             });
 })();
 
