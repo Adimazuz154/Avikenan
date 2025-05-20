@@ -208,39 +208,7 @@
     }
     updateInCenter();   // run immediately
 
-    /* ——— make thumbnails jump to first item of their category (once) ——— */
-    if (!jumpListenersAttached) {
-      const gallery = document.querySelector('#gallery');
-      if (gallery) {
-        /* 1) map category → first element */
-        const catFirstEl = {};
-        gallery.querySelectorAll('a, :scope > div > div').forEach(el => {
-          const cat = el.querySelector('img')?.alt?.trim().toLowerCase();
-          if (cat && !(cat in catFirstEl)) catFirstEl[cat] = el;
-        });
-
-        /* 2) attach click handler */
-        Object.entries(catFirstEl).forEach(([cat, firstEl]) => {
-          const thumbId = cat.replace(/\s+/g, '-') + '-cat';
-          const thumb   = document.getElementById(thumbId);
-          if (!thumb) return;
-
-          thumb.style.cursor = 'pointer';
-          thumb.addEventListener('click', () => {
-            firstEl.scrollIntoView({
-              behavior: 'smooth',
-              block:    'start',
-              inline:   'start'
-            });
-          });
-        });
-
-        jumpListenersAttached = true;
-      }
-    }
-  }  /* ← end of initObserver() */
-    
-  
+  }  
 
   /* ——— SPA navigation hooks ——— */
   function onLocationChange() {
