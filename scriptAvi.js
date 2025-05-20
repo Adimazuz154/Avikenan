@@ -256,9 +256,10 @@
        .toLowerCase();
 
        console.log (cat);
-       
+
         thumbImg.style.cursor = 'pointer';
-        thumbImg.addEventListener('click', () => {
+        thumbImg.addEventListener('click', (e) => {
+          console.log("click", e.target);
           /* ① pause the auto-scroll ticker */
           stopAutoScroll();
 
