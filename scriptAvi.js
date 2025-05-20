@@ -251,31 +251,33 @@
         .toLowerCase();
         thumb.style.cursor = 'pointer';
         thumb.addEventListener('click', () => {
-          /* ⬇︎ 1) pause the automatic ticker */
+          /* ① pause the auto-scroll ticker */
           stopAutoScroll();
 
-          /* 2) find first gallery image for this category */
+          /* ② find the first gallery image with this category */
           const img = gallery.querySelector(`img[alt="${cat}"]`);
           if (!img) return;
           const wrapper = img.closest('a, div') || img;
 
-          /* 3) decide axis and scroll - only that axis */
+          /* ③ decide orientation and centre the item on that axis */
           const isVertical = gallery.scrollHeight > gallery.clientHeight + 10;
+
+          console.log(
+            `▶ thumb '${cat}' — smooth-centre (${isVertical ? 'vertical' : 'horizontal'})`
+          );
+
           wrapper.scrollIntoView({
             behavior: 'smooth',
-            block:  isVertical ? 'start'   : 'nearest',
-            inline: isVertical ? 'nearest' : 'start'
+            block:  isVertical ? 'center'  : 'nearest',  // centre vertically
+            inline: isVertical ? 'nearest' : 'center'    // centre horizontally
           });
 
-          console.log(`▶ thumb '${cat}' — scrolled ${isVertical ? 'vertically' : 'horizontally'}`);
-
-          /* 4) resume auto-scroll after the glide ends */
+          /* ④ resume the ticker after the glide */
           const resume = () => startAutoScroll();
           if ('onscrollend' in document) {
             gallery.addEventListener('scrollend', resume, { once: true });
           } else {
-            // fallback: after 600 ms assume animation ended
-            setTimeout(resume, 600);
+            setTimeout(resume, 600);          // fallback if scrollend unsupported
           }
         });
             });
