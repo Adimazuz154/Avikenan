@@ -7,23 +7,14 @@
 
   // map gallery href → thumbnail ID
   const thumbMap = {
-    "./christianity":      "bronze-cat",
-    "./whispers-of-color": "painting-cat",
-    "./sulky-mon":         "monumental-cat",
-    "./photography4":      "photography-cat",
-    "./conceptual7":       "conceptual-cat",
-    "./christianity-jew":  "jewelry-cat"
+    "bronze":      "bronze-cat",
+    "painted": "painting-cat",
+    "monumental":         "monumental-cat",
+    "photography":      "photography-cat",
+    "conceptual":       "conceptual-cat",
+    "jewelry":  "jewelry-cat"
   };
 
-  // map gallery href → heading text
-  const hrefMap = {
-    "./christianity":      "bronze",
-    "./whispers-of-color": "Painted",
-    "./sulky-mon":         "Monumental",
-    "./photography4":      "Photography",
-    "./conceptual7":       "Conceptual",
-    "./christianity-jew":  "Jewelry"
-  };
 
   /* ——— wheel‐override when cursor over gallery ——— */
   function initWheel() {
@@ -150,41 +141,46 @@
     if (!items.length) return;
 
     io = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        const el   = entry.target;
-        const href = el.getAttribute("href");
+    entries.forEach(entry => {
+    if (!entry.isIntersecting) return;        // ignore off-screen items
 
-        if (entry.isIntersecting && hrefMap[href]) {
-          // update main-title
-          const newText = hrefMap[href];
-          const span    = document.querySelector("#main-title .framer-text span");
-          if (span) {
-            const parts = newText.split(" ");
-            span.innerHTML = parts.length === 1
-              ? parts[0]
-              : parts[0] + `<br class="framer-text">` + parts.slice(1).join(" ");
-          }
+    const el  = entry.target;
+    const img = el.querySelector("img");
+    if (!img)   return;
 
-          // update thumbnail highlight
-          const thumbId = thumbMap[href];
-          if (thumbId) {
-            if (currentThumbId && currentThumbId !== thumbId) {
-              document.getElementById(currentThumbId)
-                      ?.classList.remove("selected");
-            }
-            const thumbEl = document.getElementById(thumbId);
-            if (thumbEl) {
-              thumbEl.classList.add("selected");
-              currentThumbId = thumbId;
-            }
-          }
-        }
-      });
-    }, {
-      root:       null,
-      rootMargin: "-50% 0px -50% 0px",
-      threshold:  0
-    });
+    /* ------------- get the category from <img alt="…"> ------------- */
+    const catRaw = img.alt || "";             // whatever you typed in Alt
+    if (!catRaw) return;
+    const cat    = catRaw.trim();             // e.g. "Bronze"
+    const catKey = cat.toLowerCase();         // "bronze"
+
+    /* ========== 1) update the main title ========== */
+    const span = document.querySelector("#main-title .framer-text span");
+    if (span) {
+      const parts = cat.split(" ");
+      span.innerHTML = parts.length === 1
+        ? parts[0]                                   // one-word category
+        : parts[0] + "<br>" + parts.slice(1).join(" "); // two+ words stacked
+    }
+
+    /* ========== 2) highlight the small thumbnail ========== */
+    const thumbId = thumbMap[catKey];
+    if (thumbId) {
+      if (currentThumbId && currentThumbId !== thumbId) {
+        document.getElementById(currentThumbId)
+                ?.classList.remove("selected");
+      }
+      document.getElementById(thumbId)
+              ?.classList.add("selected");
+      currentThumbId = thumbId;
+    }
+  });
+}, {
+  root:       null,
+  rootMargin: "-50% 0px -50% 0px",
+  threshold:  0
+});
+
 
     items.forEach(el => io.observe(el));
 
