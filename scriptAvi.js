@@ -9,7 +9,7 @@
   // map gallery href → thumbnail ID
   const thumbMap = {
     "bronze":      "bronze-cat",
-    "painted": "painting-cat",
+    "painted": "painted-cat",
     "monumental":         "monumental-cat",
     "photography":      "photography-cat",
     "conceptual":       "conceptual-cat",
@@ -206,8 +206,57 @@
         centerListenersAttached = true;
       }
     }
+    
     updateInCenter();   // run immediately
+    
+    if (!centerListenersAttached) {
+      const galleryEl = document.querySelector('#gallery');
+      if (galleryEl) {
+        let ticking = false;
+        galleryEl.addEventListener('scroll', () => {
+          if (!ticking) {
+            ticking = true;
+            requestAnimationFrame(() => {
+              updateInCenter();
+              ticking = false;
+            });
+          }
+        }, { passive: true });
+        window.addEventListener('resize', updateInCenter);
+        centerListenersAttached = true;
+      }
+    }
 
+    /* ═════ make side-thumbnails jump to their category (wire once) ═════ */
+    if (!jumpListenersAttached) {
+      const gallery = document.querySelector('#gallery');
+      if (gallery) {
+        /* 1️⃣  build map  category → first element */
+        const catFirstEl = {};                             // { "painted": <div …>, … }
+        gallery.querySelectorAll('a, :scope > div > div').forEach(el => {
+          const cat = el.querySelector('img')?.alt?.trim().toLowerCase();
+          if (cat && !(cat in catFirstEl)) catFirstEl[cat] = el;   // keep the first one
+        });
+
+        /* 2️⃣  turn each thumbnail into a jump button */
+        Object.entries(catFirstEl).forEach(([cat, firstEl]) => {
+          const thumb = document.getElementById(cat.replace(/\s+/g, '-') + '-cat'); // painted → painted-cat
+          if (!thumb) return;                                      // skip if ID not found
+
+          thumb.style.cursor = 'pointer';
+          thumb.addEventListener('click', () => {
+            /* browser scrolls the correct axis automatically */
+            firstEl.scrollIntoView({
+              behavior: 'smooth',
+              block:    'start',
+              inline:   'start'
+            });
+          });
+        });
+
+        jumpListenersAttached = true;   // listeners are now in place
+      }
+    }
   }  
 
   /* ——— SPA navigation hooks ——— */
