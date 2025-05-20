@@ -264,7 +264,7 @@
           stopAutoScroll();
 
           /* ② find the first gallery image with this category */
-          const img = gallery.querySelector(`img[alt="${cat}"]`);
+          const img = e.target;
           if (!img) return;
           const wrapper = img.closest('a, div') || img;
 
