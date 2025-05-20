@@ -42,12 +42,16 @@
             return;
         }
 
-        // Check if we're on mobile and in press page
         const isPress = window.location.pathname === "/press";
         const isMobile = window.matchMedia("(max-width: 768px)").matches;
         console.log('Device state:', { isPress, isMobile });
 
-        // Force vertical mode on mobile press page
+        // Skip scroll-based center detection on mobile
+        if (isMobile) {
+            console.log('Skipping scroll-based center detection on mobile');
+            return;
+        }
+
         const isHorizontal = !(isPress && isMobile) && gallery.scrollWidth > gallery.clientWidth;
         console.log('Scroll direction:', {
             isHorizontal,
@@ -75,10 +79,8 @@
                 ? (r.left + r.width / 2)
                 : (r.top + r.height / 2);
 
-            // Calculate distance based on scroll direction
             const dist = Math.abs(elMid - galleryMid);
 
-            // Add a small bias for items that are more visible
             const visibilityBias = isHorizontal
                 ? Math.min(r.width, gRect.width) / 2
                 : Math.min(r.height, gRect.height) / 2;
@@ -105,7 +107,6 @@
             distance: closestDist
         });
 
-        // Update classes
         items.forEach(el => {
             el.classList.toggle('in-center', el === closestEl);
         });
@@ -198,34 +199,35 @@
             return;
         }
 
-        // Create a new observer for center detection
-        const centerObserver = new IntersectionObserver((entries) => {
-            console.log('Center observer entries:', entries.length);
+        const isMobile = window.matchMedia("(max-width: 768px)").matches;
 
-            // Find the entry with the highest intersection ratio
-            let maxRatio = 0;
-            let centerEntry = null;
+        // Only create center observer for mobile
+        if (isMobile) {
+            const centerObserver = new IntersectionObserver((entries) => {
+                console.log('Center observer entries:', entries.length);
 
-            entries.forEach(entry => {
-                console.log('Entry ratio:', entry.intersectionRatio);
-                if (entry.intersectionRatio > maxRatio) {
-                    maxRatio = entry.intersectionRatio;
-                    centerEntry = entry;
-                }
+                let maxRatio = 0;
+                let centerEntry = null;
+
+                entries.forEach(entry => {
+                    console.log('Entry ratio:', entry.intersectionRatio);
+                    if (entry.intersectionRatio > 0.5 && entry.intersectionRatio > maxRatio) {
+                        maxRatio = entry.intersectionRatio;
+                        centerEntry = entry;
+                    }
+                });
+
+                items.forEach(el => {
+                    el.classList.toggle('in-center', el === centerEntry?.target);
+                });
+            }, {
+                root: null,
+                threshold: [0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+                rootMargin: '-40% 0px -40% 0px'
             });
 
-            // Update center class
-            items.forEach(el => {
-                el.classList.toggle('in-center', el === centerEntry?.target);
-            });
-        }, {
-            root: document.querySelector('#gallery'),
-            threshold: [0, 0.25, 0.5, 0.75, 1],
-            rootMargin: '-45% 0px -45% 0px'
-        });
-
-        // Observe all items for center detection
-        items.forEach(el => centerObserver.observe(el));
+            items.forEach(el => centerObserver.observe(el));
+        }
 
         // Original observer for category updates
         io = new IntersectionObserver((entries) => {
@@ -275,15 +277,32 @@
         items.forEach(el => io.observe(el));
         initAutoScroll();
 
-        // Remove the old scroll-based center detection
-        if (centerListenersAttached) {
-            const galleryEl = document.querySelector('#gallery');
-            if (galleryEl) {
-                galleryEl.removeEventListener('scroll', updateInCenter);
-                window.removeEventListener('resize', updateInCenter);
+        // Only attach scroll listeners for desktop
+        if (!isMobile) {
+            if (!centerListenersAttached) {
+                console.log('Attaching center listeners for desktop');
+                const galleryEl = document.querySelector('#gallery');
+                if (galleryEl) {
+                    let ticking = false;
+                    galleryEl.addEventListener('scroll', () => {
+                        console.log('Scroll event fired');
+                        if (!ticking) {
+                            ticking = true;
+                            requestAnimationFrame(() => {
+                                updateInCenter();
+                                ticking = false;
+                            });
+                        }
+                    }, { passive: true });
+                    window.addEventListener('resize', () => {
+                        console.log('Resize event fired');
+                        updateInCenter();
+                    });
+                    centerListenersAttached = true;
+                }
             }
+            updateInCenter();
         }
-        centerListenersAttached = true;
     }
 
     function attachThumbnailJumps() {
