@@ -259,7 +259,7 @@
 
         thumbImg.style.cursor = 'pointer';
         thumbImg.addEventListener('click', (e) => {
-          console.log("click", e.target);
+          console.log("click", e.target, cat, gallery.querySelector(`img[alt="${cat}"]`));
           /* ① pause the auto-scroll ticker */
           stopAutoScroll();
 
