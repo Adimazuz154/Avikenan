@@ -133,6 +133,14 @@
   });
 }
 
+  function offsetWithin(container, element, axis /* 'y' | 'x' */ = 'y') {
+  const cRect = container.getBoundingClientRect();
+  const eRect = element.getBoundingClientRect();
+  return axis === 'y'
+    ? eRect.top  - cRect.top  + container.scrollTop
+    : eRect.left - cRect.left + container.scrollLeft;
+}
+
   /* ——— intersection‐observer for title & thumbnails only ——— */
   function initObserver() {
     initWheel();
@@ -208,7 +216,7 @@
     }
     
     updateInCenter();   // run immediately
-    
+
     if (!centerListenersAttached) {
       const galleryEl = document.querySelector('#gallery');
       if (galleryEl) {
@@ -243,13 +251,15 @@
           const thumb = document.getElementById(cat.replace(/\s+/g, '-') + '-cat'); // painted → painted-cat
           if (!thumb) return;                                      // skip if ID not found
 
-          thumb.style.cursor = 'pointer';
-          thumb.addEventListener('click', () => {
-            /* browser scrolls the correct axis automatically */
-            firstEl.scrollIntoView({
+        thumb.style.cursor = 'pointer';
+        thumb.addEventListener('click', () => {
+         const isHorizontal = gallery.scrollWidth > gallery.clientWidth;
+          const target = offsetWithin(gallery, firstEl, isHorizontal ? 'x' : 'y');
+
+            gallery.scrollTo({
               behavior: 'smooth',
-              block:    'start',
-              inline:   'start'
+              top:  isHorizontal ? 0      : target,
+              left: isHorizontal ? target : 0
             });
           });
         });
