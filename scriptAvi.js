@@ -258,8 +258,8 @@
                 if (titleElement) {
                     const parts = cat.split(" ");
                     titleElement.innerHTML = parts.length === 1
-                        ? parts[0]
-                        : parts[0] + "<br>" + parts.slice(1).join(" ");
+                        ? parts[0] + (isMobile ? "<br>Works" : "")
+                        : parts[0] + "<br>" + parts.slice(1).join(" ") + (isMobile ? "<br>Works" : "");
                 }
 
                 const thumbId = thumbMap[catKey];
