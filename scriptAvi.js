@@ -133,6 +133,16 @@
   });
 }
 
+  /* ── helper: distance from element to #gallery on the chosen axis ── */
+  function offsetWithin(container, element, axis = "y") {
+  let off = 0;
+  let el  = element;
+  while (el && el !== container) {
+    off += axis === "y" ? el.offsetTop : el.offsetLeft;
+    el   = el.offsetParent;          // walk up until we reach #gallery
+  }
+  return off;
+}
   /* ——— intersection‐observer for title & thumbnails only ——— */
   function initObserver() {
     initWheel();
@@ -209,8 +219,6 @@
     // run it immediately on observer init
     updateInCenter();
   }
-        /* already in your code … */
-    updateInCenter();              // keep this line
     
   /* ——— SPA navigation hooks ——— */
   function onLocationChange() {
@@ -242,39 +250,38 @@
                   .trim()
                   .toLowerCase();
 
-    thumb.style.cursor = 'pointer';
-    thumb.addEventListener('click', () => {
-      const img = gallery.querySelector(`img[alt="${cat}"]`);
-      if (!img) return;
+        thumb.style.cursor = "pointer";
+      thumb.addEventListener("click", () => {
+        /* first gallery image with matching alt */
+        const img = gallery.querySelector(`img[alt="${cat}"]`);
+        if (!img) return;
 
-      const wrapper = img.closest('a, div') || img;
-      const isVertical = gallery.scrollHeight > gallery.clientHeight + 10;
+        const wrapper    = img.closest("a, div") || img;
+        const isVertical = gallery.scrollHeight > gallery.clientHeight + 10;
 
-      /* 1️⃣  offset inside gallery using offsetTop / offsetLeft */
-      const offset = isVertical
-        ? wrapper.offsetTop   // distance from top of #gallery
-        : wrapper.offsetLeft; // distance from left
+        /* distance inside #gallery */
+        const axisOffset = offsetWithin(gallery, wrapper, isVertical ? "y" : "x");
 
-      /* 2️⃣  clamp to scrollable range */
-      const maxScroll = isVertical
-        ? gallery.scrollHeight - gallery.clientHeight
-        : gallery.scrollWidth  - gallery.clientWidth;
+        /* clamp to scrollable range */
+        const maxScroll  = isVertical
+          ? gallery.scrollHeight - gallery.clientHeight
+          : gallery.scrollWidth  - gallery.clientWidth;
 
-      const target = Math.max(0, Math.min(offset, maxScroll));
+        const target = Math.max(0, Math.min(axisOffset, maxScroll));
 
-      /* 3️⃣  debug */
-      console.log(
-        `▶ thumb '${cat}' — scrolling ${isVertical ? 'top' : 'left'} to`, target
-      );
+        /* ▶︎ keep the debug output */
+        console.log(
+          `▶ thumb '${cat}' — scrolling ${isVertical ? "top" : "left"} to`, target
+        );
 
-      /* 4️⃣  scroll only on the relevant axis */
-      if (isVertical) {
-        gallery.scrollTo({ top: target, behavior: 'smooth' });
-      } else {
-        gallery.scrollTo({ left: target, behavior: 'smooth' });
-      }
-    });
+        /* smooth scroll on the correct axis only */
+        gallery.scrollTo({
+          behavior: "smooth",
+          top:  isVertical ? target : 0,
+          left: isVertical ? 0      : target
+        });
       });
+            });
 })();
 
 })();
