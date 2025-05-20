@@ -244,16 +244,26 @@
 
     thumb.style.cursor = 'pointer';
     thumb.addEventListener('click', () => {
-      /* exact alt match — works if you typed lower-case words */
-      const targetImg  = gallery.querySelector(`img[alt="${cat}"]`);
-      if (!targetImg) return;
+    const targetImg = gallery.querySelector(`img[alt="${cat}"]`);
+    if (!targetImg) return;
 
-      targetImg.closest('a, div')?.scrollIntoView({
-        behavior: 'smooth',
-        block:    'start',
-        inline:   'start'
-      });
+    const wrapper = targetImg.closest('a, div') || targetImg;
+    const isHorizontal = gallery.scrollWidth > gallery.clientWidth + 10; // +10 for rounding
+
+    // --- measure offset on the relevant axis ---
+    const gRect = gallery.getBoundingClientRect();
+    const wRect = wrapper.getBoundingClientRect();
+    const offset = isHorizontal
+      ? wRect.left - gRect.left + gallery.scrollLeft   // X distance inside gallery
+      : wRect.top  - gRect.top  + gallery.scrollTop;   // Y distance
+
+    // --- scroll only that axis ---
+    gallery.scrollTo({
+      behavior: 'smooth',
+      left: isHorizontal ? offset : 0,
+      top:  isHorizontal ? 0       : offset
     });
+  });
   });
 })();
 
