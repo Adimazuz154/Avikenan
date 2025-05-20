@@ -9,7 +9,7 @@
   // map gallery href → thumbnail ID
   const thumbMap = {
     "bronze":      "bronze-cat",
-    "painted": "painted-cat",
+    "painted": "painting-cat",
     "monumental":         "monumental-cat",
     "photography":      "photography-cat",
     "conceptual":       "conceptual-cat",
@@ -246,29 +246,37 @@
 
   document.querySelectorAll('[id$="-cat"]').forEach(thumb => {
     const cat = (thumb.alt || thumb.id)
-                  .replace(/-cat$/,'')
-                  .trim()
-                  .toLowerCase();
-        thumb.style.cursor = "pointer";
-        thumb.addEventListener("click", () => {
-          /* first matching gallery image */
+        .replace(/-cat$/,'')
+        .trim()
+        .toLowerCase();
+        thumb.style.cursor = 'pointer';
+        thumb.addEventListener('click', () => {
+          /* ⬇︎ 1) pause the automatic ticker */
+          stopAutoScroll();
+
+          /* 2) find first gallery image for this category */
           const img = gallery.querySelector(`img[alt="${cat}"]`);
           if (!img) return;
+          const wrapper = img.closest('a, div') || img;
 
-          const wrapper    = img.closest("a, div") || img;
+          /* 3) decide axis and scroll - only that axis */
           const isVertical = gallery.scrollHeight > gallery.clientHeight + 10;
-
-          /* debug */
-          console.log(
-            `▶ thumb '${cat}' — scrollIntoView (${isVertical ? "vertical" : "horizontal"})`
-          );
-
-          /* scroll only the needed axis */
           wrapper.scrollIntoView({
-            behavior: "smooth",
-            block:  isVertical ? "start"   : "nearest",  // vertical axis
-            inline: isVertical ? "nearest" : "start"     // horizontal axis
+            behavior: 'smooth',
+            block:  isVertical ? 'start'   : 'nearest',
+            inline: isVertical ? 'nearest' : 'start'
           });
+
+          console.log(`▶ thumb '${cat}' — scrolled ${isVertical ? 'vertically' : 'horizontally'}`);
+
+          /* 4) resume auto-scroll after the glide ends */
+          const resume = () => startAutoScroll();
+          if ('onscrollend' in document) {
+            gallery.addEventListener('scrollend', resume, { once: true });
+          } else {
+            // fallback: after 600 ms assume animation ended
+            setTimeout(resume, 600);
+          }
         });
             });
 })();
