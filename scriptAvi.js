@@ -232,20 +232,9 @@
 
           thumb.style.cursor = 'pointer';
           thumb.addEventListener('click', () => {
-            const isHorizontal = gallery.scrollWidth > gallery.clientWidth;
-            const offset       = isHorizontal
-              ? firstEl.offsetLeft - gallery.offsetLeft   // X distance
-              : firstEl.offsetTop  - gallery.offsetTop;   // Y distance
-
-            gallery.scrollTo({
-              left:  isHorizontal ? offset : 0,
-              top:   isHorizontal ? 0 : offset,
-              behavior: 'smooth'
+            firstEl.scrollIntoView({ behavior: "smooth", block: "start", inline: "start" });
             });
-          }, { passive: true });
-        });
-
-        jumpListenersAttached = true;   // don’t wire them again
+          jumpListenersAttached = true;   // don’t wire them again
       }
     }
 
