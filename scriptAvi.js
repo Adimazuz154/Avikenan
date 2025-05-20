@@ -222,6 +222,7 @@
     
   /* ——— SPA navigation hooks ——— */
   function onLocationChange() {
+    console.log("onLocationChange");
     setTimeout(initObserver, 50);
   }
   const _push = history.pushState;
